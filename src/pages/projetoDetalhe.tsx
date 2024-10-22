@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Box,
   AppBar,
@@ -13,18 +13,26 @@ import {
   Button,
 } from "@mui/material";
 import { useLocation, useParams } from "react-router-dom";
-import { ProjectApi, ReadApiInstanceDto, ReadProjectDto } from "../shared/apiSwaggerGen/api"; // Import Swagger-generated ProjectApi
+import { ProjectApi, ReadApiInstanceDto, ReadProjectDto, UpdateProjectDto } from "../shared/apiSwaggerGen/api";
 import { api } from "../shared/api";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProjetoDetalhe = () => {
   const { id } = useParams(); // Get the ProjectId from the URL
   const location = useLocation(); // Get the state passed via navigation
-  const [project, setProject] = useState<ReadProjectDto | null>(null); 
-  const [apis, setApis] = useState<ReadApiInstanceDto[]>([]); // Set the correct type for apis state
-  const [loading, setLoading] = useState(true);
+  const [project, setProject] = useState<ReadProjectDto | null>(null); // Project data
+  const [originalProject, setOriginalProject] = useState<ReadProjectDto | null>(null); // Original project data for comparison
+  const [apis, setApis] = useState<ReadApiInstanceDto[]>([]); // APIs related to the project
+  const [loading, setLoading] = useState(true); // Loading state
+  const [isSaveDisabled, setIsSaveDisabled] = useState(true); // Save button disabled state
 
-  const axiosInstance = api; // Create the axios instance with token management
-  const projectApi = new ProjectApi(undefined, '', axiosInstance); // Create ProjectApi instance with axiosInstance
+  const [name, setName] = useState(''); // Form fields
+  const [description, setDescription] = useState('');
+  const [status, setStatus] = useState('');
+
+  // Memoize the ProjectApi instance to prevent infinite loops in useEffect
+  const projectApi = useMemo(() => new ProjectApi(undefined, '', api), []);
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
@@ -32,7 +40,13 @@ const ProjetoDetalhe = () => {
         // Fetch project details
         const response = await projectApi.apiProjectGetGet(Number(id));
         setProject(response.data);
-  
+        setOriginalProject(response.data); // Store the original data for comparison
+
+        // Initialize form fields with fetched data
+        setName(response.data.name || '');
+        setDescription(response.data.description || '');
+        setStatus(response.data.status || '');
+
         // Fetch related APIs for the project
         const apisResponse = await projectApi.apiProjectGetApiInstancesGet(Number(id));
 
@@ -40,20 +54,54 @@ const ProjetoDetalhe = () => {
         if (apisResponse && apisResponse.data) {
           setApis(apisResponse.data);
         } else {
-          console.warn("API response does not contain data:", apisResponse);
-          setApis([]); // Handle empty response
+          setApis([]);
         }
-  
+
       } catch (error) {
         console.error("Erro ao buscar detalhes do projeto:", error);
-        setApis([]); // Handle error case by setting empty array
+        toast.error("Erro ao buscar detalhes do projeto.");
+        setApis([]);
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchProjectDetails();
   }, [id, projectApi]);
+
+  // Function to check if any changes are made to the form fields
+  useEffect(() => {
+    if (
+      project &&
+      (name !== originalProject?.name ||
+        description !== originalProject?.description ||
+        status !== originalProject?.status)
+    ) {
+      setIsSaveDisabled(false); // Enable save if fields are changed
+    } else {
+      setIsSaveDisabled(true); // Disable save if no changes
+    }
+  }, [name, description, status, originalProject, project]);
+
+  const handleSave = async () => {
+    if (!project) return;
+
+    const updateProjectDto: UpdateProjectDto = {
+      name,
+      description,
+      status,
+    };
+
+    try {
+      await projectApi.apiProjectUpdatePut(Number(project.id), updateProjectDto);
+      setOriginalProject({ ...project, name, description, status }); // Update original project to the new values
+      setIsSaveDisabled(true); // Disable save button again
+      toast.success("Projeto atualizado com sucesso!"); // Success toast
+    } catch (error) {
+      console.error("Erro ao atualizar projeto:", error);
+      toast.error("Erro ao atualizar o projeto. Por favor, tente novamente."); // Error toast
+    }
+  };
 
   if (loading) {
     return (
@@ -80,10 +128,33 @@ const ProjetoDetalhe = () => {
           </Typography>
           <Paper sx={{ p: 2, mb: 4, display: "flex", gap: 5 }}>
             <TextField label="Id" value={project.id} sx={{ width: "10%" }} disabled />
-            <TextField label="Nome" value={project.name} sx={{ width: "40%" }} />
-            <TextField label="Descrição" value={project.description} sx={{ width: "40%" }} />
-            <TextField label="Status" value={project.status} sx={{ width: "10%" }} />
-            <Button variant="contained" color="primary" sx={{ width: "10%" }}>Salvar</Button>
+            <TextField
+              label="Nome"
+              value={name}
+              sx={{ width: "40%" }}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <TextField
+              label="Descrição"
+              value={description}
+              sx={{ width: "40%" }}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <TextField
+              label="Status"
+              value={status}
+              sx={{ width: "10%" }}
+              onChange={(e) => setStatus(e.target.value)}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ width: "10%" }}
+              onClick={handleSave}
+              disabled={isSaveDisabled} // Disable if no changes
+            >
+              Salvar
+            </Button>
           </Paper>
         </>
       )}
@@ -106,6 +177,9 @@ const ProjetoDetalhe = () => {
           <Typography variant="body1">Nenhuma API relacionada encontrada.</Typography>
         )}
       </List>
+
+      {/* ToastContainer is necessary for displaying toast notifications */}
+      <ToastContainer />
     </Box>
   );
 };

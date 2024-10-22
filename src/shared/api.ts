@@ -18,6 +18,7 @@ export const getAxios = (token: string | null) => {
 
 export function setupAPIClient() {
   let token = localStorage.getItem("jwt");
+  console.log("token", token);
   const api = getAxios(token);
 
   api.interceptors.response.use(

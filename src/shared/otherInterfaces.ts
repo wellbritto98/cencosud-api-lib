@@ -1,17 +1,11 @@
-export interface RefreshToken {
-    token: string;
-    createdAt: string;
-    expired: string;
-  }
-  
-  export interface LoginResponseData {
-    token: string;
-    refreshToken: RefreshToken;
-  }
-  
-  export interface LoginResponse {
+export interface LoginResponseData {
     success: boolean;
     message: string;
-    data: LoginResponseData;
+    token: string;
+    refreshToken: {
+      token: string;
+      createdAt: string;
+      expired: string;
+    };
   }
   

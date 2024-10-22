@@ -5,6 +5,7 @@ import { api } from "../shared/api";
 import { LoginUserDto, UserApi } from "../shared/apiSwaggerGen/api";
 import { AxiosResponse } from "axios";
 import { LoginResponseData } from "../shared/otherInterfaces";
+import { toast } from "react-toastify";
 
 
 const Login = () => {
@@ -31,15 +32,21 @@ const Login = () => {
     try {
       // Use the swagger-generated API method to log in
       const response = await userApi.apiUserLoginUserPost(loginUserDto);
+      //deserialize response.data in LoginResponseData
+  
         // Convertendo explicitamente para `unknown` e depois para o tipo correto
-      const typedResponse = response as unknown as AxiosResponse<LoginResponseData>;
+      const typedResponse = response.data as unknown as LoginResponseData;
 
-      if (typedResponse.status === 200) {
-          const jwt = typedResponse.data.token;
-          const refreshToken = typedResponse.data.refreshToken.token;   
+      const jsonTypedResponse = JSON.stringify(typedResponse);
+
+      const typedResponseObject = JSON.parse(jsonTypedResponse);
+
+      if (response.status === 200) {
+          const jwt = typedResponseObject.data.token;
+          const refreshToken = typedResponseObject.data.refreshToken.token;   
           localStorage.setItem("jwt", jwt);
           localStorage.setItem("refreshToken", refreshToken);
-    
+          axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
           // Redirect the user to the projects route
           navigate("/projetos");
       }

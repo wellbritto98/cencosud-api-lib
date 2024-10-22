@@ -6,6 +6,7 @@ import Login from '../pages/login';
 import Projetos from '../pages/projetos';
 import ProjetoDetalhe from '../pages/projetoDetalhe';
 import React from 'react';
+import { ToastContainer } from 'react-toastify';
 
 const AppRoutes = () => {
   return (

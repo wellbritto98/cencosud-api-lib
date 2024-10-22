@@ -7,15 +7,19 @@ import { AuthProvider } from './context/authContext';
 import AppRoutes from './routes/routes';
 import './index.css';
 import React from 'react';
+import { ToastContainer } from 'react-toastify';
 
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
   createRoot(rootElement).render(
+    
     <StrictMode>
+      <ToastContainer />
       <Provider store={store}>
         <AuthProvider>
           <Router>
+            
             <AppRoutes />
           </Router>
         </AuthProvider>
