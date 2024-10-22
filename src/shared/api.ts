@@ -1,21 +1,24 @@
 import axios from "axios";
-import { parseCookies } from "nookies";
 
 let isRefreshing = false;
-let failedRequestsQueue = [];
- 
-export const getAxios = (token) => {
+interface FailedRequest {
+  onSuccess: (token: string) => void;
+  onFailure: (err: any) => void;
+}
+let failedRequestsQueue: FailedRequest[] = [];
+
+export const getAxios = (token: string | null) => {
   return axios.create({
-    baseURL: "https://wikimundo.azurewebsites.net",
+    baseURL: "http://localhost:5137/",
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 };
 
-export function setupAPIClient(ctx = undefined) {
-  let cookies = parseCookies(ctx);
-  const api = getAxios(cookies["jwt"]);
+export function setupAPIClient() {
+  let token = localStorage.getItem("jwt");
+  const api = getAxios(token);
 
   api.interceptors.response.use(
     (response) => response,
@@ -23,8 +26,7 @@ export function setupAPIClient(ctx = undefined) {
       if (error?.response?.status === 401) {
         if (error?.response?.data?.error === "Unauthorized") {
           console.log("renova token");
-          cookies = parseCookies(ctx);
-          const { refreshToken } = cookies;
+          const refreshToken = localStorage.getItem("refreshToken");
           const originalConfig = error.config;
 
           if (!isRefreshing) {
@@ -32,11 +34,12 @@ export function setupAPIClient(ctx = undefined) {
 
             try {
               // Faz a requisição para renovar o token usando o refreshToken
-              await api.post('/RefreshToken', { refreshToken });
+              const response = await api.post('/RefreshToken', { refreshToken });
 
-              // Agora que a API configurou os cookies, use-os para atualizar o token nos headers
-              cookies = parseCookies(ctx);
-              const newToken = cookies["jwt"];
+              const newToken = response.data.token;
+
+              // Atualiza o token no localStorage
+              localStorage.setItem("jwt", newToken);
 
               // Atualiza o header Authorization com o novo token
               originalConfig.headers.Authorization = `Bearer ${newToken}`;
@@ -57,11 +60,11 @@ export function setupAPIClient(ctx = undefined) {
           // Adiciona a requisição original na fila
           return new Promise((resolve, reject) => {
             failedRequestsQueue.push({
-              onSuccess: (token) => {
+              onSuccess: (token: string) => {
                 originalConfig.headers.Authorization = `Bearer ${token}`;
                 resolve(api(originalConfig));
               },
-              onFailure: (err) => {
+              onFailure: (err: any) => {
                 reject(err);
               },
             });

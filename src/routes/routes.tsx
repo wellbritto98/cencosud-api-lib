@@ -5,6 +5,7 @@ import ProtectedRoute from './protectedRoute';
 import Login from '../pages/login';
 import Projetos from '../pages/projetos';
 import ProjetoDetalhe from '../pages/projetoDetalhe';
+import React from 'react';
 
 const AppRoutes = () => {
   return (

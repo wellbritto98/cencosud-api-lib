@@ -1,33 +1,49 @@
 import React, { useState } from "react";
 import { Button, TextField, Link, Box, Typography, Grid, Alert } from "@mui/material";
-import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Importa o hook useNavigate
+import { api } from "../shared/api";
+import { LoginUserDto, UserApi } from "../shared/apiSwaggerGen/api";
+import { AxiosResponse } from "axios";
+import { LoginResponseData } from "../shared/otherInterfaces";
+
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState<string>(""); // Ensure typing as string
+  const [password, setPassword] = useState<string>(""); // Ensure typing as string
+  const [errorMessage, setErrorMessage] = useState<string>(""); // Ensure typing as string
+  const [loading, setLoading] = useState<boolean>(false); // Ensure typing as boolean
   const navigate = useNavigate(); // Use o hook useNavigate para redirecionar
+
+  // Set up axios instance with token management
+  const axiosInstance = api;
+  const userApi = new UserApi(undefined, '', axiosInstance); // Create a new UserApi instance
 
   const handleLogin = async () => {
     setLoading(true);
     setErrorMessage("");
 
+    // Create the loginUserDto object for the API request
+    const loginUserDto: LoginUserDto = {
+      email: email,
+      password: password,
+    };
+
     try {
-      const response = await axios.post("http://localhost:5137/LoginUser", {
-        email: email,
-        password: password,
-      });
+      // Use the swagger-generated API method to log in
+      const response = await userApi.apiUserLoginUserPost(loginUserDto);
+        // Convertendo explicitamente para `unknown` e depois para o tipo correto
+      const typedResponse = response as unknown as AxiosResponse<LoginResponseData>;
 
-      const { jwt, refreshToken } = response.data;
+      if (typedResponse.status === 200) {
+          const jwt = typedResponse.data.token;
+          const refreshToken = typedResponse.data.refreshToken.token;   
+          localStorage.setItem("jwt", jwt);
+          localStorage.setItem("refreshToken", refreshToken);
+    
+          // Redirect the user to the projects route
+          navigate("/projetos");
+      }
 
-      // Salvar o JWT e o refreshToken no localStorage ou nos cookies
-      localStorage.setItem("jwt", jwt);
-      localStorage.setItem("refreshToken", refreshToken);
-
-      // Redireciona o usuário para a rota de projetos
-      navigate("/projetos");
     } catch (error) {
       setErrorMessage("Credenciais inválidas. Por favor, tente novamente.");
       console.error("Erro ao fazer login:", error);
@@ -38,7 +54,7 @@ const Login = () => {
 
   return (
     <Grid container sx={{ height: "100vh", overflow: "hidden" }}>
-      {/* Esquerda - Formulário de login */}
+      {/* Left side - Login form */}
       <Grid
         item
         xs={12}
@@ -88,7 +104,7 @@ const Login = () => {
           />
 
           <Link href="#" sx={{ display: "block", marginTop: 1, marginBottom: 2 }}>
-            Forgot Password ?
+            Forgot Password?
           </Link>
 
           <Button
@@ -105,7 +121,7 @@ const Login = () => {
         </Box>
       </Grid>
 
-      {/* Direita - Imagem Espiral */}
+      {/* Right side - Spiral image */}
       <Grid
         item
         xs={false}

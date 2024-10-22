@@ -15,17 +15,24 @@ import {
   IconButton,
 } from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
-import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Importa o useNavigate para redirecionar
+import { api } from "../shared/api";
+import { ProjectApi, ReadProjectDto } from "../shared/apiSwaggerGen/api";
+
 
 const Projetos = () => {
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState<ReadProjectDto[]>([]); // Use the ReadProjectDto type for the state
   const navigate = useNavigate(); // Hook para redirecionar
+
+  // Set up the axios instance with token management
+  const axiosInstance = api;
+  const projectApi = new ProjectApi(undefined, '', axiosInstance); // Create a new ProjectApi instance
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await axios.get("http://localhost:5137/api/Project/GetAll");
+        // Use the swagger-generated API method to get projects
+        const response = await projectApi.apiProjectGetAllGet();
         setProjects(response.data);
       } catch (error) {
         console.error("Erro ao buscar projetos:", error);
@@ -35,7 +42,7 @@ const Projetos = () => {
   }, []);
 
   // Função para navegar para a página de detalhe do projeto com os dados
-  const handleDetailClick = (project) => {
+  const handleDetailClick = (project: ReadProjectDto) => {
     navigate(`/projeto/${project.id}`, { state: project });
   };
 
@@ -68,7 +75,7 @@ const Projetos = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {projects.map((project) => (
+              {projects.map((project: ReadProjectDto) => (
                 <TableRow key={project.id}>
                   <TableCell>{project.id}</TableCell>
                   <TableCell>{project.name}</TableCell>
