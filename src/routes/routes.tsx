@@ -1,23 +1,40 @@
 import { Routes, Route } from 'react-router-dom';
-import App from '../App';
-import ExampleComponent from '../pages/exampleComponent';
-import ProtectedRoute from './protectedRoute';
+import React from 'react';
+
 import Login from '../pages/login';
 import Projetos from '../pages/projetos';
 import ProjetoDetalhe from '../pages/projetoDetalhe';
-import React from 'react';
+import ProtectedRoute from './protectedRoute'; // Suponho que você tenha rotas protegidas
 import { ToastContainer } from 'react-toastify';
+import Layout from '../layout/layout';
+import Apis from '../pages/Apis';
+
+import Componentes from '../pages/components';
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Login/>} />
-      <Route 
-        path="/projetos" 
-        element={<Projetos/>}
-      />
-      <Route path="/projeto/:id" element={<ProjetoDetalhe/>} />
-    </Routes>
+    <>
+      <ToastContainer /> {/* Para exibir notificações em todas as páginas */}
+      <Routes>
+        {/* Rota de login sem layout */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* Rotas com Layout dentro do ProtectedRoute */}
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="projetos" element={<Projetos />} />
+          <Route path="projeto/:id" element={<ProjetoDetalhe />} />
+          <Route path='apis' element={<Apis />} />
+          <Route path='componentes' element={<Componentes />} />
+        </Route>
+      </Routes>
+    </>
   );
 };
 

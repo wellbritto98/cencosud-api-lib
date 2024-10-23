@@ -1,16 +1,12 @@
-
-import { useSelector, useDispatch } from 'react-redux';
-import { Button, Typography, Box } from '@mui/material';
-import { useNavigate } from 'react-router-dom'; // Importa o hook useNavigate
-import login from './pages/login';
-import projetos from './pages/projetos';
-import Login from './pages/login';
 import React from 'react';
-const App = () => {
+import AppRoutes from './routes/routes';
+import { BrowserRouter as Router } from 'react-router-dom';
 
+const App = () => {
   return (
-    
-    <Login/>
+    <Router>
+      <AppRoutes />
+    </Router>
   );
 };
 

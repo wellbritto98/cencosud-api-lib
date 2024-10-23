@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Button, TextField, Link, Box, Typography, Grid, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom"; // Importa o hook useNavigate
 import { api } from "../shared/api";
@@ -6,6 +6,7 @@ import { LoginUserDto, UserApi } from "../shared/apiSwaggerGen/api";
 import { AxiosResponse } from "axios";
 import { LoginResponseData } from "../shared/otherInterfaces";
 import { toast } from "react-toastify";
+import { AuthContext } from "../context/authContext";
 
 
 const Login = () => {
@@ -13,7 +14,14 @@ const Login = () => {
   const [password, setPassword] = useState<string>(""); // Ensure typing as string
   const [errorMessage, setErrorMessage] = useState<string>(""); // Ensure typing as string
   const [loading, setLoading] = useState<boolean>(false); // Ensure typing as boolean
-  const navigate = useNavigate(); // Use o hook useNavigate para redirecionar
+  const { isAuthenticated, login } = useContext(AuthContext); // Importa a função login do contexto
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/projetos'); // Redireciona para projetos se autenticado
+    }
+  }, [isAuthenticated, navigate]);
 
   // Set up axios instance with token management
   const axiosInstance = api;
@@ -33,8 +41,8 @@ const Login = () => {
       // Use the swagger-generated API method to log in
       const response = await userApi.apiUserLoginUserPost(loginUserDto);
       //deserialize response.data in LoginResponseData
-  
-        // Convertendo explicitamente para `unknown` e depois para o tipo correto
+
+      // Convertendo explicitamente para `unknown` e depois para o tipo correto
       const typedResponse = response.data as unknown as LoginResponseData;
 
       const jsonTypedResponse = JSON.stringify(typedResponse);
@@ -42,13 +50,14 @@ const Login = () => {
       const typedResponseObject = JSON.parse(jsonTypedResponse);
 
       if (response.status === 200) {
-          const jwt = typedResponseObject.data.token;
-          const refreshToken = typedResponseObject.data.refreshToken.token;   
-          localStorage.setItem("jwt", jwt);
-          localStorage.setItem("refreshToken", refreshToken);
-          axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
-          // Redirect the user to the projects route
-          navigate("/projetos");
+        const jwt = typedResponseObject.data.token;
+        const refreshToken = typedResponseObject.data.refreshToken.token;
+        localStorage.setItem("jwt", jwt);
+        localStorage.setItem("refreshToken", refreshToken);
+        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
+        // Redirect the user to the projects route
+        login();
+        navigate("/projetos");
       }
 
     } catch (error) {

@@ -1,16 +1,16 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react'; // Explicitly import React and types
+import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import PropTypes from 'prop-types';
 
-// Define the context type
 interface AuthContextType {
   isAuthenticated: boolean;
-  setIsAuthenticated: (value: boolean) => void;
+  login: () => void;
+  logout: () => void;
 }
 
-// Provide a default value for the context
 const defaultAuthContext: AuthContextType = {
   isAuthenticated: false,
-  setIsAuthenticated: () => {},
+  login: () => {},
+  logout: () => {},
 };
 
 export const AuthContext = createContext<AuthContextType>(defaultAuthContext);
@@ -23,16 +23,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('jwt');
     if (token) {
       setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
     }
   }, []);
 
+  const login = () => {
+    setIsAuthenticated(true);
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('jwt');
+    localStorage.removeItem('refreshToken');
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
