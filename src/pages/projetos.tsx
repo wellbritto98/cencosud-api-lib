@@ -30,7 +30,7 @@ const Projetos = () => {
   const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'name', headerName: 'Nome', width: 200 },
-    { field: 'description', headerName: 'Descrição', width: 300 },
+    { field: 'description', headerName: 'Descrição', flex: 1 },
     { field: 'status', headerName: 'Status', width: 110 },
     {
       field: 'actions',

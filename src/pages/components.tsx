@@ -29,7 +29,7 @@ const Componentes = () => {
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'description', headerName: 'Description', width: 200 },
+    { field: 'description', headerName: 'Description', flex: 1 },
     { field: 'type', headerName: 'Type', width: 300 },
     {
       field: 'actions',

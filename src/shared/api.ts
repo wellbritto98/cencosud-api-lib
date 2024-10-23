@@ -44,6 +44,7 @@ export function setupAPIClient() {
 
               // Atualiza o header Authorization com o novo token
               originalConfig.headers.Authorization = `Bearer ${newToken}`;
+              api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
 
               // Processa todas as requisições que falharam enquanto o token era renovado
               failedRequestsQueue.forEach(req => req.onSuccess(newToken));

@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
-import { AppBar, Drawer, Toolbar, Typography, Box, List, ListItem, ListItemText, CssBaseline, Divider, IconButton } from '@mui/material';
-import { Link, Outlet } from 'react-router-dom'; 
+import React, { useContext, useState } from 'react';
+import { AppBar, Drawer, Toolbar, Typography, Box, List, ListItem, ListItemText, CssBaseline, Divider, IconButton, ListItemButton, ListItemIcon } from '@mui/material';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ApiIcon from '@mui/icons-material/Api';
+import SettingsIcon from '@mui/icons-material/Settings';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { AuthContext } from '../context/authContext';
 
 const drawerWidth = 240;
 
@@ -11,10 +16,18 @@ const Layout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // Verifica se a tela é pequena (mobile)
+  const location = useLocation(); // Obtém a localização atual
+  const { logout } = useContext(AuthContext);
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
   };
+
+  const menuItems = [
+    { text: 'Projetos', icon: <WorkOutlineIcon />, link: '/projetos' },
+    { text: 'Apis', icon: <ApiIcon />, link: '/apis' },
+    { text: 'Componentes', icon: <SettingsIcon />, link: '/componentes' }
+  ];
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -33,8 +46,14 @@ const Layout = () => {
               <MenuIcon />
             </IconButton>
           )}
-          <Typography variant="h6" noWrap component="div">
-            My Application
+          <Typography variant="h6" noWrap component="div" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <img
+              src={`/assets/img/Cencosud logo branco.png`}
+              alt="Cencosud logo"
+              style={{ maxWidth: 100 }}
+            />
+
+            Cencosud API Lib
           </Typography>
         </Toolbar>
       </AppBar>
@@ -47,23 +66,56 @@ const Layout = () => {
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+          [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
         }}
       >
-        <Toolbar />
-        <Divider />
-        <List>
-          {['Projetos', 'Apis', 'Componentes'].map((text) => (
-            <ListItem 
-              key={text} 
-              component={Link} 
-              to={`/${text.toLowerCase()}`}
-              onClick={handleDrawerToggle} // Fecha o drawer ao clicar no item se for mobile
+        <Box>
+          <Toolbar />
+          <Divider />
+          <List>
+            {menuItems.map((item) => (
+              <ListItem
+                disablePadding
+                key={item.text}
+                component={ListItemButton}
+                sx={{
+                  textDecoration: 'none',
+                  color: location.pathname === item.link ? 'primary.main' : 'inherit', // Aplica cor ao item ativo
+                  backgroundColor: location.pathname === item.link ? 'rgba(0, 0, 0, 0.08)' : 'inherit' // Adiciona destaque ao item ativo
+                }}
+                component={Link}
+                to={item.link}
+                onClick={handleDrawerToggle} // Fecha o drawer ao clicar no item se for mobile
+              >
+                <ListItemButton>
+                  <ListItemIcon>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+
+        {/* Adiciona o botão de Logout no final do Drawer */}
+        <Box>
+          <Divider />
+          <List>
+            <ListItem
+              disablePadding
+              onClick={logout} // Chama a função de logout quando clicado
+              sx={{ textDecoration: 'none', color: 'inherit' }}
             >
-              <ListItemText primary={text} />
+              <ListItemButton>
+                <ListItemIcon>
+                  <LogoutIcon />
+                </ListItemIcon>
+                <ListItemText primary="Logout" />
+              </ListItemButton>
             </ListItem>
-          ))}
-        </List>
+          </List>
+        </Box>
       </Drawer>
 
       <Box

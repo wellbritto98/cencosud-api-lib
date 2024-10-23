@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import PropTypes from 'prop-types';
+import { api } from "../shared/api";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -25,11 +26,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const token = localStorage.getItem('jwt');
     if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`; // Configura o token para todas as requisições
       setIsAuthenticated(true);
     }
   }, []);
 
   const login = () => {
+    const token = localStorage.getItem('jwt');
+    if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
     setIsAuthenticated(true);
   };
 
@@ -37,6 +43,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setIsAuthenticated(false);
     localStorage.removeItem('jwt');
     localStorage.removeItem('refreshToken');
+    delete api.defaults.headers.common['Authorization']; // Remove o header de autorização
   };
 
   return (

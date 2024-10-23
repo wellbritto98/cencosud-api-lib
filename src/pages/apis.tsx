@@ -29,8 +29,8 @@ const Apis = () => {
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'name', headerName: 'Name', width: 200 },
-    { field: 'baseUrl', headerName: 'Base Url', width: 300 },
+    { field: 'name', headerName: 'Name', flex: 1 },
+    { field: 'baseUrl', headerName: 'Base Url', flex: 1 },
     { field: 'version', headerName: 'Version', width: 110 },
     {
       field: 'actions',

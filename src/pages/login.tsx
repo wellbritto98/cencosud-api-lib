@@ -1,13 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Button, TextField, Link, Box, Typography, Grid, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom"; // Importa o hook useNavigate
-import { api } from "../shared/api";
+import { api, setupAPIClient } from "../shared/api";
 import { LoginUserDto, UserApi } from "../shared/apiSwaggerGen/api";
 import { AxiosResponse } from "axios";
 import { LoginResponseData } from "../shared/otherInterfaces";
 import { toast } from "react-toastify";
 import { AuthContext } from "../context/authContext";
-
 
 const Login = () => {
   const [email, setEmail] = useState<string>(""); // Ensure typing as string
@@ -52,12 +51,24 @@ const Login = () => {
       if (response.status === 200) {
         const jwt = typedResponseObject.data.token;
         const refreshToken = typedResponseObject.data.refreshToken.token;
+
+        // Salva tokens no localStorage
         localStorage.setItem("jwt", jwt);
         localStorage.setItem("refreshToken", refreshToken);
-        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
-        // Redirect the user to the projects route
-        login();
-        navigate("/projetos");
+        
+        // Atualiza o contexto de autenticação
+        if (localStorage.getItem("jwt") && localStorage.getItem("refreshToken")) {
+          login();
+
+          // Espera o AuthContext atualizar antes de redirecionar
+          window.location.href = "/projetos";
+        } else {
+          while (!localStorage.getItem("jwt") && !localStorage.getItem("refreshToken")) {
+            console.log("Aguardando autenticação...");
+          }
+          login();
+          window.location.href = "/projetos";
+        }
       }
 
     } catch (error) {
