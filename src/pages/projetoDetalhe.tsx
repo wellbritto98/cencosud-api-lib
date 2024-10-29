@@ -1,15 +1,14 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { Box, Typography, Paper, TextField, Button, IconButton } from "@mui/material";
+import React, { useCallback, useState } from "react";
+import { TextField, Select, MenuItem, Box, Button, IconButton, Paper, Typography } from "@mui/material";
+import { useLocation } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import GenericDataGrid from "../components/GenericDataGrid";
+import { useHandleDelete } from "../hooks/useHandleDelete";
+import { api } from "../shared/api";
+import { ProjectApi, ApiInstanceApi, UpdateProjectDto, InsertApiInstanceDto } from "../shared/apiSwaggerGen/api";
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { useLocation } from "react-router-dom";
-import { ApiInstanceApi, InsertApiInstanceDto, ProjectApi, ReadApiDto, UpdateProjectDto } from "../shared/apiSwaggerGen/api";
-import { api } from "../shared/api";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { DataGrid } from "@mui/x-data-grid";
-import { EditToolbar } from "../components/EditToolbarDatagrid";
-import { useFetchData } from "../hooks/useFetchData";
+import { InsertApiInstanceForm } from "../components/InsertApiInstanceForm";
 
 const ProjetoDetalhe = () => {
   const location = useLocation();
@@ -23,21 +22,8 @@ const ProjetoDetalhe = () => {
   const [description, setDescription] = useState(projectData?.description || '');
   const [status, setStatus] = useState(projectData?.status || '');
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
-  
-  const fetchApiInstances = useCallback(() => projectApi.apiProjectGetApiInstancesGet(projectId), [projectId]);
-  const [rows, setRows] = useFetchData(fetchApiInstances, "ApiInstance");
-  const [formattedRows, setFormattedRows] = useState<ReadApiDto[]>([]);
 
-  useEffect(() => {
-    const transformedData: ReadApiDto[] = rows.map((item) => ({
-      id: item.api?.id,
-      name: item.api?.name ?? '',
-      description: item.api?.description ?? '',
-      baseUrl: item.api?.baseUrl ?? '',
-      version: item.api?.version ?? '',
-    }));
-    setFormattedRows(transformedData);
-  }, [rows]);
+  const fetchApiInstances = useCallback(() => projectApi.apiProjectGetApiInstancesGet(projectId), [projectId]);
 
   const handleSave = async () => {
     const updateProjectDto: UpdateProjectDto = { name, description, status };
@@ -51,10 +37,14 @@ const ProjetoDetalhe = () => {
     }
   };
 
-  const deleteApiInstance = async (projectId: number, apiId: number): Promise<void> => {
+  const deleteApiInstance = async (projectId, apiId) => {
     await apiInstancesApi.apiApiInstanceDeleteDelete(projectId, apiId);
-    toast.success("API Instance deletada com sucesso!");
-    setRows((prevRows) => prevRows.filter((row) => row.apiId !== apiId));
+  };
+  const [rows, setRows] = React.useState([]); // State para armazenar os dados
+  const handleDelete = useHandleDelete(fetchApiInstances, deleteApiInstance, "ApiInstance", setRows);
+
+  const createProject = async (data) => {
+    await apiInstancesApi.apiApiInstanceCreatePost(data);
   };
 
   const columns = [
@@ -72,7 +62,10 @@ const ProjetoDetalhe = () => {
           <IconButton color="primary">
             <OpenInNewIcon />
           </IconButton>
-          <IconButton color="secondary" onClick={() => deleteApiInstance(projectId ,params.row.id)}>
+          <IconButton
+            color="secondary"
+            onClick={() => handleDelete(projectId, params.row.id)} // Passe ambos os IDs quando disponível
+          >
             <DeleteIcon />
           </IconButton>
         </>
@@ -80,7 +73,20 @@ const ProjetoDetalhe = () => {
     },
   ];
 
-  const handleOpen = () => console.log("Implementar ação de abrir modal");
+  const initialInsertDto = {
+    projectId: projectId, // Project ID fixo
+    apiId: 1, // Valor inicial do API ID
+  };
+
+  const transformData = (data) => data.map((item) => ({
+    id: item.api?.id,
+    name: item.api?.name ?? '',
+    description: item.api?.description ?? '',
+    baseUrl: item.api?.baseUrl ?? '',
+    version: item.api?.version ?? '',
+  }));
+
+  
 
   return (
     <Box sx={{ p: 3 }}>
@@ -119,15 +125,19 @@ const ProjetoDetalhe = () => {
         </Button>
       </Paper>
 
-      <DataGrid
-        rows={formattedRows}
+      <GenericDataGrid
+        title="Lista de Apis"
         columns={columns}
-        pageSizeOptions={[5]}
-        pagination
-        slots={{ toolbar: () => <EditToolbar entityName={"APIs"} handleOpen={handleOpen} /> }}
+        fetchData={fetchApiInstances}
+        createData={createProject}
+        entityName="ApiInstance"
+        insertDto={initialInsertDto}
+        transformData={transformData}
+        rowsT={rows}
+        customInsertContent={(formData, handleInputChange) => (
+          <InsertApiInstanceForm formData={formData} handleInputChange={handleInputChange} projectId={projectId} />
+        )}
       />
-
-      <ToastContainer />
     </Box>
   );
 };

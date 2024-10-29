@@ -14,13 +14,11 @@ import Componentes from '../pages/components';
 const AppRoutes = () => {
   return (
     <>
-      <ToastContainer /> {/* Para exibir notificações em todas as páginas */}
       <Routes>
-
         <Route path="/login" element={<Login />} />
-        
-        <Route 
-          path="/" 
+
+        <Route
+          path="/"
           element={
             <ProtectedRoute>
               <Layout />

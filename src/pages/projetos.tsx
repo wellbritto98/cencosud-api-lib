@@ -1,12 +1,12 @@
 import { ProjectApi, InsertProjectDto } from "../shared/apiSwaggerGen/api";
 import { api } from "../shared/api";
 import React from "react";
-import GenericDataGrid from "../components/GenericDatagrid";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton } from "@mui/material";
 import { useHandleDetailClick } from "../hooks/useHandleDetailOnClick";
 import { useHandleDelete } from "../hooks/useHandleDelete";
+import GenericDataGrid from "../components/GenericDataGrid";
 
 const Projetos = () => {
   const projectApi = new ProjectApi(undefined, '', api);
@@ -65,8 +65,6 @@ const Projetos = () => {
       columns={columns}
       fetchData={fetchProjects}
       createData={createProject}
-      deleteData={deleteProject}
-      detailUrl="/projeto"
       entityName="Projeto"
       insertDto={initialInsertDto} // Passar um objeto inicial do tipo InsertProjectDto
     />

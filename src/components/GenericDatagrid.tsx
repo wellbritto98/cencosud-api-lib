@@ -1,39 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Button, Box, CircularProgress, Modal, Typography, TextField } from "@mui/material";
-import { useFetchData } from "../hooks/useFetchData";
 import { ToastContainer, toast } from 'react-toastify';
 import { EditToolbar } from "./EditToolbarDatagrid";
+import { useFetchData } from "../hooks/useFetchData";
 
-interface GenericDataGridProps<T, U extends object> {
+interface GenericDataGridProps<T, U extends object, V extends object> { // Adicionado `U extends object`
   title: string;
   columns: GridColDef[];
   fetchData: () => Promise<{ data: T[] }>;
   createData: (data: U) => Promise<void>;
-  deleteData: (id: number) => Promise<void>;
-  detailUrl: string;
   entityName: string;
   insertDto: U;
-  getRowId?: (row: T) => string | number; // Propriedade opcional getRowId
-  customInsertContent?: JSX.Element | ((formData: U, handleInputChange: (field: keyof U, value: any) => void) => JSX.Element); // Custom component or function
+  transformData?: (data: T[]) => V[]; // Função para transformar os dados
+  rowsT?: T[], // Adiciona refreshData como uma nova prop
+  customInsertContent?: JSX.Element | ((formData: U, handleInputChange: (field: keyof U, value: any) => void) => JSX.Element);
 }
 
-const GenericDataGrid = <T, U extends object>({
+const GenericDataGrid = <T, U extends object, V extends object>({
   title,
   columns,
   fetchData,
   createData,
-  deleteData,
-  detailUrl,
   entityName,
   insertDto,
-  getRowId, // Recebe a função opcional getRowId
-  customInsertContent
-}: GenericDataGridProps<T, U>) => {
+  transformData,
+  rowsT,
+  customInsertContent,
+}: GenericDataGridProps<T, U, V>) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<U>(insertDto);
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useFetchData(fetchData, entityName);
+  const [transformedRows, setTransformedRows] = useState<V[]>([]);
+
+  useEffect(() => {
+    if (rowsT) {
+      setRows(rowsT); // Atualiza `rows` com `rowsT` sempre que `rowsT` muda
+    }
+  }, [rowsT]);
+  
+  useEffect(() => {
+    if (transformData) {
+      setTransformedRows(transformData(rows)); // Aplica a transformação se existir
+    } else {
+      setTransformedRows(rows as unknown as V[]); // Converte os dados diretamente
+    }
+  }, [rows, transformData]);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -47,6 +60,10 @@ const GenericDataGrid = <T, U extends object>({
       [field]: value,
     });
   };
+  const handleDeleteRefresh = async () => {
+    const response = await fetchData();
+    setRows(response.data);
+  };
 
   const handleSave = async () => {
     setLoading(true);
@@ -54,7 +71,12 @@ const GenericDataGrid = <T, U extends object>({
       await createData(formData);
       const response = await fetchData();
       setRows(response.data);
-      toast.success(`${entityName} adicionado com sucesso!`);
+      try {
+        toast.success(`${entityName} adicionado com sucesso!`);
+      }
+      catch (e) {
+        console.log(e)
+      }
       handleClose();
     } catch (error) {
       toast.error(`Erro ao criar ${entityName}, tente novamente!`);
@@ -81,7 +103,7 @@ const GenericDataGrid = <T, U extends object>({
       <Typography variant="h4" gutterBottom>{title}</Typography>
       <Box sx={{ height: 600, width: '100%' }}>
         <DataGrid
-          rows={rows}
+          rows={transformedRows} // Usa os dados transformados
           columns={columns}
           pageSizeOptions={[5]}
           pagination
@@ -95,7 +117,7 @@ const GenericDataGrid = <T, U extends object>({
             ? typeof customInsertContent === "function"
               ? customInsertContent(formData, handleInputChange)
               : customInsertContent
-            : renderFields()} {/* Renderiza o componente customizado, se existir */}
+            : renderFields()}
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
             <Button variant="contained" color="secondary" onClick={handleClose}>Cancelar</Button>
             <Button
@@ -110,7 +132,6 @@ const GenericDataGrid = <T, U extends object>({
           </Box>
         </Box>
       </Modal>
-      <ToastContainer />
     </Box>
   );
 };

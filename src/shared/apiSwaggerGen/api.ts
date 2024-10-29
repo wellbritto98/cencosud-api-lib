@@ -215,16 +215,16 @@ export interface InsertApiDto {
 export interface InsertApiInstanceDto {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof InsertApiInstanceDto
      */
-    'projectId'?: string | null;
+    'projectId'?: number | null;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof InsertApiInstanceDto
      */
-    'apiId'?: string | null;
+    'apiId'?: number | null;
 }
 /**
  * 
