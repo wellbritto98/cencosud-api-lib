@@ -1,11 +1,11 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { TextField, Select, MenuItem, Box, Button, IconButton, Paper, Typography } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import GenericDataGrid from "../components/GenericDataGrid";
 import { useHandleDelete } from "../hooks/useHandleDelete";
 import { api } from "../shared/api";
-import { ProjectApi, ApiInstanceApi, UpdateProjectDto, InsertApiInstanceDto } from "../shared/apiSwaggerGen/api";
+import { ProjectApi, ApiInstanceApi, UpdateProjectDto, InsertApiInstanceDto, ReadProjectDto } from "../shared/apiSwaggerGen/api";
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { InsertApiInstanceForm } from "../components/InsertApiInstanceForm";
@@ -17,12 +17,31 @@ const ProjetoDetalhe = () => {
 
   const projectData = location.state;
   const projectId = projectData?.id;
-
+  const [originalProject, setOriginalProject] = useState<ReadProjectDto | null>(null);
   const [name, setName] = useState(projectData?.name || '');
   const [description, setDescription] = useState(projectData?.description || '');
   const [status, setStatus] = useState(projectData?.status || '');
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
+  useEffect(() => {
+    if (projectData) {
+      setOriginalProject(projectData);
+    }
+  }
+    , [projectData]);
 
+  useEffect(() => {
+    if (
+      projectData &&
+      (name !== originalProject?.name ||
+        description !== originalProject?.description ||
+        status !== originalProject?.status)
+    ) {
+      setIsSaveDisabled(false); // Enable save if fields are changed
+    } else {
+      setIsSaveDisabled(true); // Disable save if no changes
+    }
+  }, [name, description, status, originalProject, projectData]);
+  
   const fetchApiInstances = useCallback(() => projectApi.apiProjectGetApiInstancesGet(projectId), [projectId]);
 
   const handleSave = async () => {
@@ -86,7 +105,7 @@ const ProjetoDetalhe = () => {
     version: item.api?.version ?? '',
   }));
 
-  
+
 
   return (
     <Box sx={{ p: 3 }}>
