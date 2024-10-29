@@ -1,12 +1,8 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
-// Hook personalizado para navegação
-export const useHandleDetailClick = (detailUrl: string) => {
-  const navigate = useNavigate(); // O useNavigate deve ser usado dentro do hook
-
-  const handleDetailClick = (id: number) => {
-    navigate(`${detailUrl}/${id}`);
+export const useHandleDetailClick = (url: string) => {
+  const navigate = useNavigate();
+  return (data) => {
+    navigate(url, { state: data }); // Envia os dados da linha como `state`
   };
-
-  return handleDetailClick;
 };

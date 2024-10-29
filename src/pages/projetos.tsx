@@ -6,7 +6,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton } from "@mui/material";
 import { useHandleDetailClick } from "../hooks/useHandleDetailOnClick";
-import { useHandleDelete } from "../hooks/useHandleDelete"; 
+import { useHandleDelete } from "../hooks/useHandleDelete";
 
 const Projetos = () => {
   const projectApi = new ProjectApi(undefined, '', api);
@@ -38,7 +38,10 @@ const Projetos = () => {
       width: 150,
       renderCell: (params) => (
         <>
-          <IconButton color="primary" onClick={() => handleDetailClick(params.row.id)}>
+          <IconButton
+            color="primary"
+            onClick={() => handleDetailClick(params.row)} // Passa a linha completa
+          >
             <OpenInNewIcon />
           </IconButton>
           <IconButton color="secondary" onClick={() => handleDelete(params.row.id)}>

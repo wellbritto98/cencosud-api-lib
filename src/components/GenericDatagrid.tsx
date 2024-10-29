@@ -1,39 +1,46 @@
 import React, { useState } from "react";
-import { DataGrid, GridColDef, GridToolbarContainer, GridToolbarQuickFilter } from '@mui/x-data-grid';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Button, Box, CircularProgress, Modal, Typography, TextField } from "@mui/material";
-import AddIcon from '@mui/icons-material/Add';
 import { useFetchData } from "../hooks/useFetchData";
-import { useHandleDetailClick } from "../hooks/useHandleDetailOnClick";
-import { useHandleDelete } from "../hooks/useHandleDelete";
 import { ToastContainer, toast } from 'react-toastify';
+import { EditToolbar } from "./EditToolbarDatagrid";
 
-interface GenericDataGridProps<T, U extends object> { // Restringindo `U` para ser um objeto
+interface GenericDataGridProps<T, U extends object> {
   title: string;
   columns: GridColDef[];
   fetchData: () => Promise<{ data: T[] }>;
-  createData: (data: U) => Promise<void>; // Agora recebemos o `InsertDto` dinâmico
+  createData: (data: U) => Promise<void>;
   deleteData: (id: number) => Promise<void>;
   detailUrl: string;
   entityName: string;
-  insertDto: U; // Recebemos o DTO de inserção como uma prop
+  insertDto: U;
+  getRowId?: (row: T) => string | number; // Propriedade opcional getRowId
+  customInsertContent?: JSX.Element | ((formData: U, handleInputChange: (field: keyof U, value: any) => void) => JSX.Element); // Custom component or function
 }
 
-const GenericDataGrid = <T, U extends object>({ title, columns, fetchData, createData, deleteData, detailUrl, entityName, insertDto }: GenericDataGridProps<T, U>) => {
+const GenericDataGrid = <T, U extends object>({
+  title,
+  columns,
+  fetchData,
+  createData,
+  deleteData,
+  detailUrl,
+  entityName,
+  insertDto,
+  getRowId, // Recebe a função opcional getRowId
+  customInsertContent
+}: GenericDataGridProps<T, U>) => {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<U>(insertDto); // Usamos um estado para armazenar dinamicamente o Dto
+  const [formData, setFormData] = useState<U>(insertDto);
   const [loading, setLoading] = useState(false);
-
   const [rows, setRows] = useFetchData(fetchData, entityName);
-  const handleDetailClick = useHandleDetailClick(detailUrl);
-  const handleDelete = useHandleDelete(fetchData, deleteData, entityName, setRows);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
-    setFormData(insertDto); // Resetar o formulário ao fechar
+    setFormData(insertDto);
     setOpen(false);
   };
 
-  // Função para lidar com a mudança de valores dinâmicos no formulário
   const handleInputChange = (field: keyof U, value: any) => {
     setFormData({
       ...formData,
@@ -44,7 +51,7 @@ const GenericDataGrid = <T, U extends object>({ title, columns, fetchData, creat
   const handleSave = async () => {
     setLoading(true);
     try {
-      await createData(formData); // Envia o DTO dinamicamente
+      await createData(formData);
       const response = await fetchData();
       setRows(response.data);
       toast.success(`${entityName} adicionado com sucesso!`);
@@ -56,50 +63,21 @@ const GenericDataGrid = <T, U extends object>({ title, columns, fetchData, creat
     }
   };
 
-  // Função para gerar campos de inserção dinamicamente com base nas chaves do InsertDto
   const renderFields = () => {
     return Object.keys(insertDto).map((key) => (
       <TextField
         key={key}
         fullWidth
         margin="normal"
-        label={key.charAt(0).toUpperCase() + key.slice(1)} // Capitaliza o nome do campo
-        value={(formData as any)[key] || ''} // Pega o valor dinamicamente do estado formData
-        onChange={(e) => handleInputChange(key as keyof U, e.target.value)} // Atualiza o valor dinamicamente
+        label={key.charAt(0).toUpperCase() + key.slice(1)}
+        value={(formData as any)[key] || ''}
+        onChange={(e) => handleInputChange(key as keyof U, e.target.value)}
       />
     ));
   };
 
-  const EditToolbar = () => (
-    <GridToolbarContainer
-      sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        padding: 2,
-        backgroundColor: '#F77F00', // Laranja pastel para a toolbar
-      }}
-    >
-      <GridToolbarQuickFilter
-        sx={{
-          backgroundColor: 'white', // Define o background como branco
-          borderRadius: 2, // Aplica bordas arredondadas na raiz
-          '& .MuiOutlinedInput-root': {
-            backgroundColor: 'white',
-            borderRadius: 2, // Aplica bordas arredondadas ao input
-          },
-          '& .MuiInputBase-root': {
-            borderRadius: 2, // Garantir borda arredondada também no input base
-          },
-        }}
-      />
-      <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpen}>
-        Add {entityName}
-      </Button>
-    </GridToolbarContainer>
-  );
-
   return (
-    <Box sx={{ flexGrow: 1, width:"100%", padding:6 }}>
+    <Box sx={{ flexGrow: 1, width: "100%", padding: 6 }}>
       <Typography variant="h4" gutterBottom>{title}</Typography>
       <Box sx={{ height: 600, width: '100%' }}>
         <DataGrid
@@ -107,13 +85,17 @@ const GenericDataGrid = <T, U extends object>({ title, columns, fetchData, creat
           columns={columns}
           pageSizeOptions={[5]}
           pagination
-          slots={{ toolbar: EditToolbar }}
+          slots={{ toolbar: () => <EditToolbar entityName={entityName} handleOpen={handleOpen} /> }}
         />
       </Box>
       <Modal open={open} onClose={handleClose}>
         <Box sx={{ p: 4, backgroundColor: 'white', borderRadius: 1 }}>
           <Typography variant="h6">Inserir Novo {entityName}</Typography>
-          {renderFields()} {/* Renderiza os campos dinamicamente */}
+          {customInsertContent
+            ? typeof customInsertContent === "function"
+              ? customInsertContent(formData, handleInputChange)
+              : customInsertContent
+            : renderFields()} {/* Renderiza o componente customizado, se existir */}
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
             <Button variant="contained" color="secondary" onClick={handleClose}>Cancelar</Button>
             <Button
@@ -128,6 +110,7 @@ const GenericDataGrid = <T, U extends object>({ title, columns, fetchData, creat
           </Box>
         </Box>
       </Modal>
+      <ToastContainer />
     </Box>
   );
 };

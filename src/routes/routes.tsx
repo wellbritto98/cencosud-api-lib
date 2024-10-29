@@ -16,10 +16,9 @@ const AppRoutes = () => {
     <>
       <ToastContainer /> {/* Para exibir notificações em todas as páginas */}
       <Routes>
-        {/* Rota de login sem layout */}
+
         <Route path="/login" element={<Login />} />
         
-        {/* Rotas com Layout dentro do ProtectedRoute */}
         <Route 
           path="/" 
           element={
@@ -29,7 +28,7 @@ const AppRoutes = () => {
           }
         >
           <Route path="projetos" element={<Projetos />} />
-          <Route path="projeto/:id" element={<ProjetoDetalhe />} />
+          <Route path="projeto" element={<ProjetoDetalhe />} />
           <Route path='apis' element={<Apis />} />
           <Route path='componentes' element={<Componentes />} />
         </Route>
