@@ -77,6 +77,31 @@ export type ComponentType = typeof ComponentType[keyof typeof ComponentType];
 /**
  * 
  * @export
+ * @interface ComponentUtilizationDto
+ */
+export interface ComponentUtilizationDto {
+    /**
+     * 
+     * @type {Array<ReadProjectDto>}
+     * @memberof ComponentUtilizationDto
+     */
+    'projects'?: Array<ReadProjectDto> | null;
+    /**
+     * 
+     * @type {Array<ReadApiDto>}
+     * @memberof ComponentUtilizationDto
+     */
+    'apis'?: Array<ReadApiDto> | null;
+    /**
+     * 
+     * @type {Array<ReadEndpointDto>}
+     * @memberof ComponentUtilizationDto
+     */
+    'endpoints'?: Array<ReadEndpointDto> | null;
+}
+/**
+ * 
+ * @export
  * @interface ForgotPasswordRequest
  */
 export interface ForgotPasswordRequest {
@@ -218,13 +243,13 @@ export interface InsertApiInstanceDto {
      * @type {number}
      * @memberof InsertApiInstanceDto
      */
-    'projectId'?: number | null;
+    'projectId'?: number;
     /**
      * 
      * @type {number}
      * @memberof InsertApiInstanceDto
      */
-    'apiId'?: number | null;
+    'apiId'?: number;
 }
 /**
  * 
@@ -237,13 +262,13 @@ export interface InsertComponentDto {
      * @type {ComponentType}
      * @memberof InsertComponentDto
      */
-    'type'?: ComponentType;
+    'type': ComponentType;
     /**
      * 
      * @type {string}
      * @memberof InsertComponentDto
      */
-    'description'?: string | null;
+    'description': string;
 }
 
 
@@ -274,10 +299,10 @@ export interface InsertComponentInstanceDto {
 export interface InsertEndpointDto {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof InsertEndpointDto
      */
-    'apiId'?: string | null;
+    'apiId'?: number;
     /**
      * 
      * @type {string}
@@ -308,7 +333,7 @@ export interface InsertProjectDto {
      * @type {string}
      * @memberof InsertProjectDto
      */
-    'name'?: string | null;
+    'name': string;
     /**
      * 
      * @type {string}
@@ -317,11 +342,13 @@ export interface InsertProjectDto {
     'description'?: string | null;
     /**
      * 
-     * @type {string}
+     * @type {ProjectStatus}
      * @memberof InsertProjectDto
      */
-    'status'?: string | null;
+    'status': ProjectStatus;
 }
+
+
 /**
  * 
  * @export
@@ -411,6 +438,21 @@ export interface ProblemDetails {
      */
     'instance'?: string | null;
 }
+/**
+ * 
+ * @export
+ * @enum {number}
+ */
+
+export const ProjectStatus = {
+    NUMBER_0: 0,
+    NUMBER_1: 1,
+    NUMBER_2: 2
+} as const;
+
+export type ProjectStatus = typeof ProjectStatus[keyof typeof ProjectStatus];
+
+
 /**
  * 
  * @export
@@ -551,10 +593,10 @@ export interface ReadEndpointDto {
     'id'?: number;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof ReadEndpointDto
      */
-    'apiId'?: string | null;
+    'apiId'?: number;
     /**
      * 
      * @type {string}
@@ -600,11 +642,13 @@ export interface ReadProjectDto {
     'description'?: string | null;
     /**
      * 
-     * @type {string}
+     * @type {ProjectStatus}
      * @memberof ReadProjectDto
      */
-    'status'?: string | null;
+    'status'?: ProjectStatus;
 }
+
+
 /**
  * 
  * @export
@@ -828,13 +872,13 @@ export interface UpdateComponentDto {
      * @type {ComponentType}
      * @memberof UpdateComponentDto
      */
-    'type'?: ComponentType;
+    'type': ComponentType;
     /**
      * 
      * @type {string}
      * @memberof UpdateComponentDto
      */
-    'description'?: string | null;
+    'description': string;
 }
 
 
@@ -874,7 +918,7 @@ export interface UpdateProjectDto {
      * @type {string}
      * @memberof UpdateProjectDto
      */
-    'name'?: string | null;
+    'name': string;
     /**
      * 
      * @type {string}
@@ -883,11 +927,13 @@ export interface UpdateProjectDto {
     'description'?: string | null;
     /**
      * 
-     * @type {string}
+     * @type {ProjectStatus}
      * @memberof UpdateProjectDto
      */
-    'status'?: string | null;
+    'status': ProjectStatus;
 }
+
+
 
 /**
  * ApiApi - axios parameter creator
@@ -991,6 +1037,43 @@ export const ApiApiAxiosParamCreator = function (configuration?: Configuration) 
 
             // authentication oauth2 required
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} [apiId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiApiGetApiEndpointsGet: async (apiId?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/Api/GetApiEndpoints`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication oauth2 required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (apiId !== undefined) {
+                localVarQueryParameter['apiId'] = apiId;
+            }
 
 
     
@@ -1132,6 +1215,18 @@ export const ApiApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 
+         * @param {number} [apiId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiApiGetApiEndpointsGet(apiId?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ReadEndpointDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiApiGetApiEndpointsGet(apiId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ApiApi.apiApiGetApiEndpointsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Esse endpoint permite a busca de um item no banco de dados através de sua chave primária, fornecida em formato JSON. ID do item no formato JSON. O JSON deve conter as chaves primárias necessárias da entidade no seguinte formato:{ \"Chave1\": \"Valor1\",  \"Chave2\": \"Valor2\" }
          * @summary Retorna um item pelo ID.
          * @param {number} [apiId] 
@@ -1198,6 +1293,15 @@ export const ApiApiFactory = function (configuration?: Configuration, basePath?:
             return localVarFp.apiApiGetAllGet(options).then((request) => request(axios, basePath));
         },
         /**
+         * 
+         * @param {number} [apiId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiApiGetApiEndpointsGet(apiId?: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<ReadEndpointDto>> {
+            return localVarFp.apiApiGetApiEndpointsGet(apiId, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Esse endpoint permite a busca de um item no banco de dados através de sua chave primária, fornecida em formato JSON. ID do item no formato JSON. O JSON deve conter as chaves primárias necessárias da entidade no seguinte formato:{ \"Chave1\": \"Valor1\",  \"Chave2\": \"Valor2\" }
          * @summary Retorna um item pelo ID.
          * @param {number} [apiId] 
@@ -1261,6 +1365,17 @@ export class ApiApi extends BaseAPI {
      */
     public apiApiGetAllGet(options?: RawAxiosRequestConfig) {
         return ApiApiFp(this.configuration).apiApiGetAllGet(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} [apiId] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ApiApi
+     */
+    public apiApiGetApiEndpointsGet(apiId?: number, options?: RawAxiosRequestConfig) {
+        return ApiApiFp(this.configuration).apiApiGetApiEndpointsGet(apiId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2449,6 +2564,43 @@ export const ComponentApiAxiosParamCreator = function (configuration?: Configura
     return {
         /**
          * 
+         * @param {number} [componentId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiComponentComponentUtilizationGet: async (componentId?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/Component/ComponentUtilization`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication oauth2 required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (componentId !== undefined) {
+                localVarQueryParameter['componentId'] = componentId;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Insere um novo item no banco de dados.
          * @param {InsertComponentDto} [insertComponentDto] 
          * @param {*} [options] Override http request option.
@@ -2647,6 +2799,18 @@ export const ComponentApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
+         * @param {number} [componentId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiComponentComponentUtilizationGet(componentId?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ComponentUtilizationDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiComponentComponentUtilizationGet(componentId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ComponentApi.apiComponentComponentUtilizationGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Insere um novo item no banco de dados.
          * @param {InsertComponentDto} [insertComponentDto] 
          * @param {*} [options] Override http request option.
@@ -2722,6 +2886,15 @@ export const ComponentApiFactory = function (configuration?: Configuration, base
     return {
         /**
          * 
+         * @param {number} [componentId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiComponentComponentUtilizationGet(componentId?: number, options?: RawAxiosRequestConfig): AxiosPromise<ComponentUtilizationDto> {
+            return localVarFp.apiComponentComponentUtilizationGet(componentId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Insere um novo item no banco de dados.
          * @param {InsertComponentDto} [insertComponentDto] 
          * @param {*} [options] Override http request option.
@@ -2780,6 +2953,17 @@ export const ComponentApiFactory = function (configuration?: Configuration, base
  * @extends {BaseAPI}
  */
 export class ComponentApi extends BaseAPI {
+    /**
+     * 
+     * @param {number} [componentId] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ComponentApi
+     */
+    public apiComponentComponentUtilizationGet(componentId?: number, options?: RawAxiosRequestConfig) {
+        return ComponentApiFp(this.configuration).apiComponentComponentUtilizationGet(componentId, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @summary Insere um novo item no banco de dados.
@@ -3384,6 +3568,43 @@ export const EndpointApiAxiosParamCreator = function (configuration?: Configurat
             };
         },
         /**
+         * 
+         * @param {number} [endpointId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiEndpointGetEndpointComponentsGet: async (endpointId?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/Endpoint/GetEndpointComponents`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication oauth2 required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (endpointId !== undefined) {
+                localVarQueryParameter['endpointId'] = endpointId;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Esse endpoint permite a busca de um item no banco de dados através de sua chave primária, fornecida em formato JSON. ID do item no formato JSON. O JSON deve conter as chaves primárias necessárias da entidade no seguinte formato:{ \"Chave1\": \"Valor1\",  \"Chave2\": \"Valor2\" }
          * @summary Retorna um item pelo ID.
          * @param {number} [endpointId] 
@@ -3512,6 +3733,18 @@ export const EndpointApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 
+         * @param {number} [endpointId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiEndpointGetEndpointComponentsGet(endpointId?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ReadComponentInstanceDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiEndpointGetEndpointComponentsGet(endpointId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EndpointApi.apiEndpointGetEndpointComponentsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Esse endpoint permite a busca de um item no banco de dados através de sua chave primária, fornecida em formato JSON. ID do item no formato JSON. O JSON deve conter as chaves primárias necessárias da entidade no seguinte formato:{ \"Chave1\": \"Valor1\",  \"Chave2\": \"Valor2\" }
          * @summary Retorna um item pelo ID.
          * @param {number} [endpointId] 
@@ -3578,6 +3811,15 @@ export const EndpointApiFactory = function (configuration?: Configuration, baseP
             return localVarFp.apiEndpointGetAllGet(options).then((request) => request(axios, basePath));
         },
         /**
+         * 
+         * @param {number} [endpointId] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiEndpointGetEndpointComponentsGet(endpointId?: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<ReadComponentInstanceDto>> {
+            return localVarFp.apiEndpointGetEndpointComponentsGet(endpointId, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Esse endpoint permite a busca de um item no banco de dados através de sua chave primária, fornecida em formato JSON. ID do item no formato JSON. O JSON deve conter as chaves primárias necessárias da entidade no seguinte formato:{ \"Chave1\": \"Valor1\",  \"Chave2\": \"Valor2\" }
          * @summary Retorna um item pelo ID.
          * @param {number} [endpointId] 
@@ -3641,6 +3883,17 @@ export class EndpointApi extends BaseAPI {
      */
     public apiEndpointGetAllGet(options?: RawAxiosRequestConfig) {
         return EndpointApiFp(this.configuration).apiEndpointGetAllGet(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} [endpointId] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EndpointApi
+     */
+    public apiEndpointGetEndpointComponentsGet(endpointId?: number, options?: RawAxiosRequestConfig) {
+        return EndpointApiFp(this.configuration).apiEndpointGetEndpointComponentsGet(endpointId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

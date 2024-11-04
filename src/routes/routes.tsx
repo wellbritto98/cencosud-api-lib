@@ -7,9 +7,10 @@ import ProjetoDetalhe from '../pages/projetoDetalhe';
 import ProtectedRoute from './protectedRoute'; // Suponho que você tenha rotas protegidas
 import { ToastContainer } from 'react-toastify';
 import Layout from '../layout/layout';
-import Apis from '../pages/Apis';
 
 import Componentes from '../pages/components';
+import ApiDetalhe from '../pages/apiDetalhe';
+import Apis from '../pages/apis';
 
 const AppRoutes = () => {
   return (
@@ -28,6 +29,7 @@ const AppRoutes = () => {
           <Route path="projetos" element={<Projetos />} />
           <Route path="projeto" element={<ProjetoDetalhe />} />
           <Route path='apis' element={<Apis />} />
+          <Route path='api' element={<ApiDetalhe />} />
           <Route path='componentes' element={<Componentes />} />
         </Route>
       </Routes>

@@ -9,7 +9,7 @@ let failedRequestsQueue: FailedRequest[] = [];
 
 export const getAxios = (token: string | null) => {
   return axios.create({
-    baseURL: "http://localhost:5137//",
+    baseURL: "http://localhost:5137/",
     headers: {
       Authorization: `Bearer ${token}`,
     },

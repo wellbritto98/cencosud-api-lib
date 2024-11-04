@@ -1,12 +1,13 @@
 import { ApiApi, InsertApiDto } from "../shared/apiSwaggerGen/api";
 import { api } from "../shared/api";
 import React from "react";
-import GenericDataGrid from "../components/GenericDatagrid";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton } from "@mui/material";
 import { useHandleDetailClick } from "../hooks/useHandleDetailOnClick";
 import { useHandleDelete } from "../hooks/useHandleDelete"; 
+import GenericDataGrid from "../components/GenericDatagrid";
+
 
 const Apis = () => {
   const apiApi = new ApiApi(undefined, '', api);
@@ -38,7 +39,7 @@ const Apis = () => {
       width: 150,
       renderCell: (params) => (
         <>
-          <IconButton color="primary" onClick={() => handleDetailClick(params.row.id)}>
+          <IconButton color="primary" onClick={() => handleDetailClick(params.row)}>
             <OpenInNewIcon />
           </IconButton>
           <IconButton color="secondary" onClick={() => handleDelete(params.row.id)}>
@@ -63,9 +64,7 @@ const Apis = () => {
       columns={columns}
       fetchData={fetchApis}
       createData={createApi}
-      deleteData={deleteApi}
-      detailUrl="/api"
-      entityName="api"
+      entityName="Api"
       insertDto={initialInsertDto} // Passar um objeto inicial do tipo InsertApiDto
     />
   );

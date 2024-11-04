@@ -6,7 +6,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton } from "@mui/material";
 import { useHandleDetailClick } from "../hooks/useHandleDetailOnClick";
 import { useHandleDelete } from "../hooks/useHandleDelete";
-import GenericDataGrid from "../components/GenericDataGrid";
+import GenericDataGrid from "../components/GenericDatagrid";
+import { GridColDef } from "@mui/x-data-grid";
+import { getProjectStatusName } from "../shared/enums/projectStatus";
+import InsertProjectForm from "../components/InsertProjectForm";
+
 
 const Projetos = () => {
   const projectApi = new ProjectApi(undefined, '', api);
@@ -27,11 +31,18 @@ const Projetos = () => {
 
   const handleDelete = useHandleDelete(fetchProjects, deleteProject, "Projeto", setRows);
 
-  const columns = [
+  const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'name', headerName: 'Nome', width: 200 },
     { field: 'description', headerName: 'Descrição', flex: 1 },
-    { field: 'status', headerName: 'Status', width: 110 },
+    {
+      field: 'status', // Campo para exibir o alias
+      headerName: 'Status',
+      width: 110,
+      valueGetter: (value) => {
+            return getProjectStatusName(value)
+      }
+    },
     {
       field: 'actions',
       headerName: 'Ações',
@@ -56,7 +67,7 @@ const Projetos = () => {
   const initialInsertDto: InsertProjectDto = {
     name: '',
     description: '',
-    status: '',
+    status: 0,
   };
 
   return (
@@ -67,6 +78,9 @@ const Projetos = () => {
       createData={createProject}
       entityName="Projeto"
       insertDto={initialInsertDto} // Passar um objeto inicial do tipo InsertProjectDto
+      customInsertContent={(formData, handleInputChange) => (
+        <InsertProjectForm formData={formData} handleInputChange={handleInputChange} />
+      )}
     />
   );
 };
