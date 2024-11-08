@@ -9,6 +9,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import GenericDataGrid from "../components/GenericDatagrid";
 import InsertEndpointForm from "../components/InsertEndpointForm";
+import { useHandleDetailClick } from "../hooks/useHandleDetailOnClick";
 
 const ApiDetalhe = () => {
   const location = useLocation();
@@ -57,7 +58,7 @@ const ApiDetalhe = () => {
       toast.error("Erro ao atualizar a API. Por favor, tente novamente.");
     }
   };
-
+  const handleDetailClick = useHandleDetailClick("/endpoint");
   const deleteEndpoint = async (id) => {
     await endpointApi.apiEndpointDeleteDelete(id);
   };
@@ -79,7 +80,9 @@ const ApiDetalhe = () => {
       width: 150,
       renderCell: (params) => (
         <>
-          <IconButton color="primary">
+          <IconButton color="primary"
+          onClick={() => handleDetailClick(params.row)}
+          >
             <OpenInNewIcon />
           </IconButton>
           <IconButton

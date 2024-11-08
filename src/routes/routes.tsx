@@ -11,6 +11,7 @@ import Layout from '../layout/layout';
 import Componentes from '../pages/components';
 import ApiDetalhe from '../pages/apiDetalhe';
 import Apis from '../pages/apis';
+import EndpointDetalhe from '../pages/endpointDetalhe';
 
 const AppRoutes = () => {
   return (
@@ -30,6 +31,7 @@ const AppRoutes = () => {
           <Route path="projeto" element={<ProjetoDetalhe />} />
           <Route path='apis' element={<Apis />} />
           <Route path='api' element={<ApiDetalhe />} />
+          <Route path='endpoint' element={<EndpointDetalhe />} />
           <Route path='componentes' element={<Componentes />} />
         </Route>
       </Routes>

@@ -99,7 +99,12 @@ const GenericDataGrid = <T, U extends object, V extends object>({
   };
 
   return (
-    <Box sx={{ flexGrow: 1, width: "100%", padding: 6 }}>
+    <Box sx={
+      { flexGrow: 1, 
+        width: "100%", 
+        padding: 6 
+      }
+      }>
       <Typography variant="h4" gutterBottom>{title}</Typography>
       <Box sx={{ height: 600, width: '100%' }}>
         <DataGrid
