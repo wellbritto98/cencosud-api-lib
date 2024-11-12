@@ -16,7 +16,7 @@ interface GenericDataGridProps<T, U extends object> {
 
 const GenericDataGridInstances = () => {
   return (
-    <Box sx={{ flexGrow: 1, width: "100%", padding: 6 }}>
+    <Box sx={{ flexGrow: 1, width: "100%", padding: 7 }}>
       <DataGrid
           rows={rows}
           columns={columns}
