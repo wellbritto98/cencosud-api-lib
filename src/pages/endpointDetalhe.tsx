@@ -10,11 +10,18 @@ import GenericDataGrid from "../components/GenericDatagrid";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useHandleDelete } from "../hooks/useHandleDelete";
 import { InsertApiInstanceForm } from "../components/InsertApiInstanceForm";
+import { getComponentTypeName } from "../shared/enums/ComponentType";
+import ComponentUtilizationPopup from "../components/ComponentUtilizationPopup";
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 const EndpointDetalhe = () => {
   const location = useLocation();
   const endpointApi = new EndpointApi(undefined, '', api);
   const componentInstanceApi = new ComponentInstanceApi(undefined, '', api);
+  const [openPopup, setOpenPopup] = useState(false);
+  const [selectedComponentId, setSelectedComponentId] = useState<number | null>(null);
+
+
 
   const endpointData = location.state as ReadEndpointDto;
   const endpointId = endpointData?.id || 0; // Define um valor padrão para garantir que seja um número
@@ -44,7 +51,10 @@ const EndpointDetalhe = () => {
   }, [path, description, method, originalEndpoint, endpointData]);
 
   const fetchComponentInstances = useCallback(() => endpointApi.apiEndpointGetEndpointComponentsGet(endpointId), [endpointId]);
-
+  const handleOpenPopup = (componentId: number) => {
+    setSelectedComponentId(componentId);
+    setOpenPopup(true);
+  };
   const handleSave = async () => {
     const updateEndpointDto: UpdateEndpointDto = { path, description, method };
     try {
@@ -70,7 +80,11 @@ const EndpointDetalhe = () => {
 
   const columns = [
     { field: 'id', headerName: 'Id', width: 90 },
-    { field: 'type', headerName: 'Tipo', flex: 1 },
+    {
+      field: 'type', headerName: 'Tipo', flex: 1, valueGetter: (value) => {
+        return getComponentTypeName(value)
+      }
+    },
     { field: 'description', headerName: 'Description', flex: 1 },
     {
       field: 'actions',
@@ -78,11 +92,8 @@ const EndpointDetalhe = () => {
       width: 150,
       renderCell: (params) => (
         <>
-          <IconButton
-            color="primary"
-            onClick={() => handleDetailClick(params.row)}
-          >
-            <OpenInNewIcon />
+          <IconButton color="primary" onClick={() => handleOpenPopup(params.row.id)}>
+            <BarChartIcon />
           </IconButton>
           <IconButton
             color="secondary"
@@ -101,17 +112,16 @@ const EndpointDetalhe = () => {
   };
 
   const transformData = (data) => data.map((item) => ({
-    id: item.endpoint?.id,
-    path: item.endpoint?.path ?? '',
-    description: item.endpoint?.description ?? '',
-    method: item.endpoint?.method ?? '',
+    id: item.component?.id,
+    type: item.component?.type ?? '',
+    description: item.component?.description ?? '',
   }));
 
 
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>
-        Detalhes do Projeto: {endpointData?.path}
+        Detalhes do endpoint: {endpointData?.path}
       </Typography>
 
       <Paper sx={{ p: 2, mb: 4, display: "flex", gap: 5 }}>
@@ -134,7 +144,17 @@ const EndpointDetalhe = () => {
           value={method}
           sx={{ width: "25%" }}
           onChange={(e) => setMethod(e.target.value)} // Converte para número antes de EndpointStatus
-        />
+        >
+          <MenuItem value={"GET"}>GET</MenuItem>
+          <MenuItem value={"POST"}>POST</MenuItem>
+          <MenuItem value={"PUT"}>PUT</MenuItem>
+          <MenuItem value={"DELETE"}>DELETE</MenuItem>
+          <MenuItem value={"PATCH"}>PATCH</MenuItem>
+          <MenuItem value={"OPTIONS"}>OPTIONS</MenuItem>
+          <MenuItem value={"HEAD"}>HEAD</MenuItem>
+          <MenuItem value={"TRACE"}>TRACE</MenuItem>
+          <MenuItem value={"CONNECT"}>CONNECT</MenuItem>
+        </TextField>
 
         <Button
           variant="contained"
@@ -148,7 +168,7 @@ const EndpointDetalhe = () => {
       </Paper>
 
       <GenericDataGrid
-        title="Lista de Apis"
+        title="Lista de Componentes"
         columns={columns}
         fetchData={fetchComponentInstances}
         createData={createComponent}
@@ -157,8 +177,16 @@ const EndpointDetalhe = () => {
         transformData={transformData}
         rowsT={rows}
       />
+      <ComponentUtilizationPopup
+        open={openPopup}
+        onClose={() => setOpenPopup(false)}
+        componentId={selectedComponentId || 0} // Passa o ID selecionado ou 0 como fallback
+      />
     </Box>
+
   );
 };
 
 export default EndpointDetalhe;
+
+
