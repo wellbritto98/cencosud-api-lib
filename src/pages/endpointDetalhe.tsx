@@ -21,14 +21,12 @@ const EndpointDetalhe = () => {
   const [openPopup, setOpenPopup] = useState(false);
   const [selectedComponentId, setSelectedComponentId] = useState<number | null>(null);
 
-
-
   const endpointData = location.state as ReadEndpointDto;
-  const endpointId = endpointData?.id || 0; // Define um valor padrão para garantir que seja um número
+  const endpointId = endpointData?.id || 0;
   const [originalEndpoint, setOriginalEndpoint] = useState<ReadEndpointDto | null>(null);
   const [path, setPath] = useState(endpointData?.path || '');
   const [description, setDescription] = useState(endpointData?.description || '');
-  const [method, setMethod] = useState(endpointData?.method || ''); // Define o tipo como EndpointStatus
+  const [method, setMethod] = useState(endpointData?.method || '');
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
 
   useEffect(() => {
@@ -38,19 +36,17 @@ const EndpointDetalhe = () => {
   }, [endpointData]);
 
   useEffect(() => {
-    if (
-      endpointData &&
-      (path !== originalEndpoint?.path ||
-        description !== originalEndpoint?.description ||
-        method !== originalEndpoint?.method)
-    ) {
-      setIsSaveDisabled(false);
-    } else {
-      setIsSaveDisabled(true);
-    }
-  }, [path, description, method, originalEndpoint, endpointData]);
+    // Disable save if any field is empty or if no changes are detected
+    const hasChanges = (
+      path !== originalEndpoint?.path ||
+      description !== originalEndpoint?.description ||
+      method !== originalEndpoint?.method
+    );
+    const hasEmptyFields = !path || !description || !method;
 
-  const fetchComponentInstances = useCallback(() => endpointApi.apiEndpointGetEndpointComponentsGet(endpointId), [endpointId]);
+    setIsSaveDisabled(!hasChanges || hasEmptyFields);
+  }, [path, description, method, originalEndpoint]);
+
   const handleOpenPopup = (componentId: number) => {
     setSelectedComponentId(componentId);
     setOpenPopup(true);
@@ -70,6 +66,7 @@ const EndpointDetalhe = () => {
   const deleteComponentInstance = async (endpointId: number, apiId: number) => {
     await componentInstanceApi.apiComponentInstanceDeleteDelete(endpointId, apiId);
   };
+  const fetchComponentInstances = useCallback(() => endpointApi.apiEndpointGetEndpointComponentsGet(endpointId), [endpointId]);
   const [rows, setRows] = useState([]);
   const handleDelete = useHandleDelete(fetchComponentInstances, deleteComponentInstance, "ComponentInstance", setRows);
 
@@ -143,7 +140,7 @@ const EndpointDetalhe = () => {
           select
           value={method}
           sx={{ width: "25%" }}
-          onChange={(e) => setMethod(e.target.value)} // Converte para número antes de EndpointStatus
+          onChange={(e) => setMethod(e.target.value)}
         >
           <MenuItem value={"GET"}>GET</MenuItem>
           <MenuItem value={"POST"}>POST</MenuItem>

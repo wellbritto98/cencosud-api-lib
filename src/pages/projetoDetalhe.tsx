@@ -4,25 +4,25 @@ import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { api } from "../shared/api";
 import { ProjectApi, ApiInstanceApi, UpdateProjectDto, ReadProjectDto, ProjectStatus, InsertApiInstanceDto } from "../shared/apiSwaggerGen/api";
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useHandleDetailClick } from "../hooks/useHandleDetailOnClick";
 import GenericDataGrid from "../components/GenericDatagrid";
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { getProjectStatusName } from "../shared/enums/projectStatus";
 import { useHandleDelete } from "../hooks/useHandleDelete";
 import { InsertApiInstanceForm } from "../components/InsertApiInstanceForm";
 
 const ProjetoDetalhe = () => {
   const location = useLocation();
-  const projectApi = new ProjectApi(undefined, '', api);
-  const apiInstancesApi = new ApiInstanceApi(undefined, '', api);
+  const projectApi = new ProjectApi(undefined, "", api);
+  const apiInstancesApi = new ApiInstanceApi(undefined, "", api);
 
   const projectData = location.state as ReadProjectDto;
-  const projectId = projectData?.id || 0; // Define um valor padrão para garantir que seja um número
+  const projectId = projectData?.id || 0;
   const [originalProject, setOriginalProject] = useState<ReadProjectDto | null>(null);
-  const [name, setName] = useState(projectData?.name || '');
-  const [description, setDescription] = useState(projectData?.description || '');
-  const [status, setStatus] = useState<ProjectStatus>(projectData?.status ?? ProjectStatus.NUMBER_0); // Define o tipo como ProjectStatus
+  const [name, setName] = useState(projectData?.name || "");
+  const [description, setDescription] = useState(projectData?.description || "");
+  const [status, setStatus] = useState<ProjectStatus>(projectData?.status ?? ProjectStatus.NUMBER_0);
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
 
   useEffect(() => {
@@ -32,17 +32,16 @@ const ProjetoDetalhe = () => {
   }, [projectData]);
 
   useEffect(() => {
-    if (
-      projectData &&
-      (name !== originalProject?.name ||
-        description !== originalProject?.description ||
-        status !== originalProject?.status)
-    ) {
-      setIsSaveDisabled(false);
-    } else {
-      setIsSaveDisabled(true);
-    }
-  }, [name, description, status, originalProject, projectData]);
+    // Disable save if any field is empty or if no changes are detected
+    const hasChanges = (
+      name !== originalProject?.name ||
+      description !== originalProject?.description ||
+      status !== originalProject?.status
+    );
+    const hasEmptyFields = !name || !description || status === undefined;
+
+    setIsSaveDisabled(!hasChanges || hasEmptyFields);
+  }, [name, description, status, originalProject]);
 
   const fetchApiInstances = useCallback(() => projectApi.apiProjectGetApiInstancesGet(projectId), [projectId]);
 
@@ -70,27 +69,21 @@ const ProjetoDetalhe = () => {
   const handleDetailClick = useHandleDetailClick("/api");
 
   const columns = [
-    { field: 'id', headerName: 'API ID', width: 90 },
-    { field: 'name', headerName: 'Name', flex: 1 },
-    { field: 'description', headerName: 'Description', flex: 1 },
-    { field: 'baseUrl', headerName: 'Base URL', flex: 1 },
-    { field: 'version', headerName: 'Version', width: 110 },
+    { field: "id", headerName: "API ID", width: 90 },
+    { field: "name", headerName: "Name", flex: 1 },
+    { field: "description", headerName: "Description", flex: 1 },
+    { field: "baseUrl", headerName: "Base URL", flex: 1 },
+    { field: "version", headerName: "Version", width: 110 },
     {
-      field: 'actions',
-      headerName: 'Ações',
+      field: "actions",
+      headerName: "Ações",
       width: 150,
       renderCell: (params) => (
         <>
-          <IconButton
-            color="primary"
-            onClick={() => handleDetailClick(params.row)}
-          >
+          <IconButton color="primary" onClick={() => handleDetailClick(params.row)}>
             <OpenInNewIcon />
           </IconButton>
-          <IconButton
-            color="secondary"
-            onClick={() => handleDelete(projectId, params.row.id)}
-          >
+          <IconButton color="secondary" onClick={() => handleDelete(projectId, params.row.id)}>
             <DeleteIcon />
           </IconButton>
         </>
@@ -105,10 +98,10 @@ const ProjetoDetalhe = () => {
 
   const transformData = (data) => data.map((item) => ({
     id: item.api?.id,
-    name: item.api?.name ?? '',
-    description: item.api?.description ?? '',
-    baseUrl: item.api?.baseUrl ?? '',
-    version: item.api?.version ?? '',
+    name: item.api?.name ?? "",
+    description: item.api?.description ?? "",
+    baseUrl: item.api?.baseUrl ?? "",
+    version: item.api?.version ?? "",
   }));
 
   const projectStatusOptions = Object.values(ProjectStatus)
@@ -144,7 +137,7 @@ const ProjetoDetalhe = () => {
           select
           value={status}
           sx={{ width: "25%" }}
-          onChange={(e) => setStatus(Number(e.target.value) as ProjectStatus)} // Converte para número antes de ProjectStatus
+          onChange={(e) => setStatus(Number(e.target.value) as ProjectStatus)}
         >
           {projectStatusOptions}
         </TextField>

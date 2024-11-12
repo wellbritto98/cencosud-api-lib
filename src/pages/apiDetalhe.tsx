@@ -5,24 +5,24 @@ import { toast } from "react-toastify";
 import { useHandleDelete } from "../hooks/useHandleDelete";
 import { api } from "../shared/api";
 import { ProjectApi, ApiInstanceApi, UpdateApiDto, ReadApiDto, EndpointApi, InsertEndpointDto, ApiApi } from "../shared/apiSwaggerGen/api";
-import DeleteIcon from '@mui/icons-material/Delete';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import DeleteIcon from "@mui/icons-material/Delete";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import GenericDataGrid from "../components/GenericDatagrid";
 import InsertEndpointForm from "../components/InsertEndpointForm";
 import { useHandleDetailClick } from "../hooks/useHandleDetailOnClick";
 
 const ApiDetalhe = () => {
   const location = useLocation();
-  const apiApi = new ApiApi(undefined, '', api);
-  const endpointApi = new EndpointApi(undefined, '', api);
+  const apiApi = new ApiApi(undefined, "", api);
+  const endpointApi = new EndpointApi(undefined, "", api);
 
   const apiData = location.state as ReadApiDto;
   const apiId = apiData?.id;
   const [originalApi, setOriginalApi] = useState<ReadApiDto | null>(null);
-  const [name, setName] = useState(apiData?.name || '');
-  const [description, setDescription] = useState(apiData?.description || '');
-  const [baseUrl, setBaseUrl] = useState(apiData?.baseUrl || '');
-  const [version, setVersion] = useState(apiData?.version || '');
+  const [name, setName] = useState(apiData?.name || "");
+  const [description, setDescription] = useState(apiData?.description || "");
+  const [baseUrl, setBaseUrl] = useState(apiData?.baseUrl || "");
+  const [version, setVersion] = useState(apiData?.version || "");
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
 
   useEffect(() => {
@@ -32,18 +32,17 @@ const ApiDetalhe = () => {
   }, [apiData]);
 
   useEffect(() => {
-    if (
-      apiData &&
-      (name !== originalApi?.name ||
-        description !== originalApi?.description ||
-        baseUrl !== originalApi?.baseUrl ||
-        version !== originalApi?.version)
-    ) {
-      setIsSaveDisabled(false);
-    } else {
-      setIsSaveDisabled(true);
-    }
-  }, [name, description, baseUrl, version, originalApi, apiData]);
+    // Disable save if any field is empty or if no changes are detected
+    const hasChanges = (
+      name !== originalApi?.name ||
+      description !== originalApi?.description ||
+      baseUrl !== originalApi?.baseUrl ||
+      version !== originalApi?.version
+    );
+    const hasEmptyFields = !name || !description || !baseUrl || !version;
+
+    setIsSaveDisabled(!hasChanges || hasEmptyFields);
+  }, [name, description, baseUrl, version, originalApi]);
 
   const fetchEndpoints = useCallback(() => apiApi.apiApiGetApiEndpointsGet(apiId), [apiId]);
 
@@ -58,6 +57,7 @@ const ApiDetalhe = () => {
       toast.error("Erro ao atualizar a API. Por favor, tente novamente.");
     }
   };
+
   const handleDetailClick = useHandleDetailClick("/endpoint");
   const deleteEndpoint = async (id) => {
     await endpointApi.apiEndpointDeleteDelete(id);
@@ -70,25 +70,20 @@ const ApiDetalhe = () => {
   };
 
   const columns = [
-    { field: 'id', headerName: 'Id', width: 90 },
-    { field: 'path', headerName: 'Path', width: 110 },
-    { field: 'method', headerName: 'Method', width: 110 },
-    { field: 'description', headerName: 'Description', flex: 1 },
+    { field: "id", headerName: "Id", width: 90 },
+    { field: "path", headerName: "Path", width: 110 },
+    { field: "method", headerName: "Method", width: 110 },
+    { field: "description", headerName: "Description", flex: 1 },
     {
-      field: 'actions',
-      headerName: 'Ações',
+      field: "actions",
+      headerName: "Ações",
       width: 150,
       renderCell: (params) => (
         <>
-          <IconButton color="primary"
-          onClick={() => handleDetailClick(params.row)}
-          >
+          <IconButton color="primary" onClick={() => handleDetailClick(params.row)}>
             <OpenInNewIcon />
           </IconButton>
-          <IconButton
-            color="secondary"
-            onClick={() => handleDelete(params.row.id)}
-          >
+          <IconButton color="secondary" onClick={() => handleDelete(params.row.id)}>
             <DeleteIcon />
           </IconButton>
         </>
@@ -97,19 +92,19 @@ const ApiDetalhe = () => {
   ];
 
   const initialInsertDto: InsertEndpointDto = {
-    apiId: apiId, // Inclui apiId diretamente em initialInsertDto
-    path: '',
-    method: '',
-    description: '',
+    apiId: apiId,
+    path: "",
+    method: "",
+    description: "",
   };
 
   const transformData = (data) =>
     data.map((item) => ({
       id: item.id,
       apiId: item.apiId,
-      path: item.path ?? '',
-      method: item.method ?? '',
-      description: item.description ?? '',
+      path: item.path ?? "",
+      method: item.method ?? "",
+      description: item.description ?? "",
     }));
 
   return (
@@ -123,19 +118,19 @@ const ApiDetalhe = () => {
         <TextField
           label="Nome"
           value={name}
-          sx={{ width: "40%" }}
+          sx={{ width: "30%" }}
           onChange={(e) => setName(e.target.value)}
         />
         <TextField
           label="Descrição"
           value={description}
-          sx={{ width: "40%" }}
+          sx={{ width: "30%" }}
           onChange={(e) => setDescription(e.target.value)}
         />
         <TextField
           label="Url Base"
           value={baseUrl}
-          sx={{ width: "10%" }}
+          sx={{ width: "30%" }}
           onChange={(e) => setBaseUrl(e.target.value)}
         />
         <TextField
