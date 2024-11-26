@@ -14,19 +14,18 @@ export const EditToolbar: React.FC<EditToolbarProps> = ({ entityName, handleOpen
       display: 'flex',
       justifyContent: 'space-between',
       padding: 2,
-      backgroundColor: '#F77F00', // Laranja pastel para a toolbar
+      backgroundImage:  'linear-gradient(to right, #F79431, #1585EC )', // Gradient para a toolbar
     }}
   >
     <GridToolbarQuickFilter
       sx={{
-        backgroundColor: 'white', // Define o background como branco
-        borderRadius: 2, // Aplica bordas arredondadas na raiz
+        borderRadius: 1, // Aplica bordas arredondadas na raiz
         '& .MuiOutlinedInput-root': {
           backgroundColor: 'white',
-          borderRadius: 2, // Aplica bordas arredondadas ao input
+          borderRadius: 1, // Aplica bordas arredondadas ao input
         },
         '& .MuiInputBase-root': {
-          borderRadius: 2, // Garantir borda arredondada também no input base
+          borderRadius: 1, // Garantir borda arredondada também no input base
         },
       }}
     />

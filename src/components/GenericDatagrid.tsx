@@ -116,7 +116,7 @@ const GenericDataGrid = <T, U extends object, V extends object>({
         />
       </Box>
       <Modal open={open} onClose={handleClose}>
-        <Box sx={{ p: 4, backgroundColor: 'white', borderRadius: 1 }}>
+        <Box sx={{ p: 6, backgroundColor: 'white', borderRadius: 1 }}>
           <Typography variant="h6">Inserir Novo {entityName}</Typography>
           {customInsertContent
             ? typeof customInsertContent === "function"
@@ -124,7 +124,7 @@ const GenericDataGrid = <T, U extends object, V extends object>({
               : customInsertContent
             : renderFields()}
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button variant="contained" color="secondary" onClick={handleClose}>Cancelar</Button>
+            <Button variant="contained" color="warning" onClick={handleClose}>Cancelar</Button>
             <Button
               variant="contained"
               color="primary"
